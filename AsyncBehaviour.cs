@@ -61,6 +61,13 @@ public class CoroutinePromise
 	{
 		isDone = true;
 	}
+
+	public CoroutinePromise Resolve(IEnumerator newCoroutine)
+	{
+		promise = new CoroutinePromise(newCoroutine);
+		isDone = true;
+		return promise;
+	}
 }
 
 public class CoroutinePromiseSet
