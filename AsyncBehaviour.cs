@@ -56,6 +56,11 @@ public class CoroutinePromise
 	{
 		get { return coroutine; }
 	}
+
+	public void Resolve()
+	{
+		isDone = true;
+	}
 }
 
 public class CoroutinePromiseSet
@@ -73,18 +78,15 @@ public class CoroutinePromiseSet
 		{
 			for (int i = 0; i < listPromises.Count; i++)
 			{
-				bool x = listPromises[i].Coroutine.MoveNext();
-				if (!listPromises[i].IsDone && x) {
+				if (!listPromises[i].IsDone && listPromises[i].Coroutine.MoveNext()) {
 					continue;
 				} else {
-					Debug.Log (listPromises[i].IsDone);
-					Debug.Log(x);
-					Debug.Break();
 					if (listPromises[i].Promise != null)
+					{
 						listPromises.Add(listPromises[i].Promise);
+					}
 					listPromises.RemoveAt(i);
 				}
-
 			}
 			yield return null;
 		}
@@ -92,22 +94,27 @@ public class CoroutinePromiseSet
 }
 
 public class AsyncBehaviour : MonoBehaviour {
-
+	CoroutinePromise c;
+	CoroutinePromise ca;
 	void Start ()
 	{
-		CoroutinePromise c = new CoroutinePromise(CoroutineA());
-		c.Then(CoroutineB()).Then(CoroutineC());
+		c = new CoroutinePromise(CoroutineA());
+		ca = c.Then(CoroutineB());
+		CoroutinePromise cb = ca.Then(CoroutineC());
 		StartPromiseSet(c);
-
+		
 		CoroutinePromise c2 = new CoroutinePromise(CoroutineA2());
-		c.Then(CoroutineB2()).Then(CoroutineC2());
+		c2.Then(CoroutineB2()).Then(CoroutineC2());
 		StartPromiseSet(c2);
 	}
-
+	
 	float t = 0.0f;
 	void Update()
 	{
 		t += Time.deltaTime;
+
+		if (t >= 2f) c.Resolve();
+		if (t >= 7f) ca.Resolve();
 	}
 
 	public void StartPromiseSet(CoroutinePromise c)
