@@ -72,28 +72,22 @@ public class CoroutinePromise
 
 public class CoroutinePromiseSet
 {
-	List<CoroutinePromise> listPromises = new List<CoroutinePromise>();
+	CoroutinePromise currentPromise = null;
 
 	public CoroutinePromiseSet(CoroutinePromise c)
 	{
-		listPromises.Add(c);
+		currentPromise = c;
 	}
 
 	public IEnumerator SuperCoroutine()
 	{
-		while (listPromises.Count > 0)
+		while (currentPromise != null)
 		{
-			for (int i = 0; i < listPromises.Count; i++)
-			{
-				if (!listPromises[i].IsDone && listPromises[i].Coroutine.MoveNext()) {
-					continue;
-				} else {
-					if (listPromises[i].Promise != null)
-					{
-						listPromises.Add(listPromises[i].Promise);
-					}
-					listPromises.RemoveAt(i);
-				}
+			if (!(!currentPromise.IsDone && currentPromise.Coroutine.MoveNext())) {
+				if (currentPromise.Promise != null)
+					currentPromise = currentPromise.Promise;
+				else
+					currentPromise = null;
 			}
 			yield return null;
 		}
